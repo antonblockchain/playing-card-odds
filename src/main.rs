@@ -44,27 +44,19 @@ fn main() {
     for removed in &removed_cards {
         if suits.contains(&removed.as_str()) {
             // Это масть
-            let suit = removed;
+            let suit = removed.as_str();
             for rank in &ranks {
                 all_possible.remove(&format!("{}{}", rank, suit));
             }
         } else if removed.len() == 2 {
             // Это ранг + масть
-            let rank = &removed[0..1];
-            let suit = &removed[1..2];
+            let rank = &removed.as_str()[0..1];
+            let suit = &removed.as_str()[1..2];
             all_possible.remove(&format!("{}{}", rank, suit));
         } else if ranks.contains(&removed.as_str()) {
             // Это только ранг
-            let rank = removed;
             for suit in &suits {
-                all_possible.remove(&format!("{}{}", rank, suit));
-            }
-        } else if removed == "8" {
-            // Это '8'
-            for rank in &ranks {
-                for suit in &suits {
-                    all_possible.remove(&format!("{}{}", rank, suit));
-                }
+                all_possible.remove(&format!("{}{}", removed.as_str(), suit));
             }
         }
     }
@@ -75,15 +67,20 @@ fn main() {
     for card in &sought_cards {
         if suits.contains(&card.as_str()) {
             // Это масть
-            let suit = card;
+            let suit = card.as_str();
             for rank in &ranks {
                 all_matching.insert(format!("{}{}", rank, suit));
             }
         } else if card.len() == 2 {
             // Это ранг + масть
-            let rank = &card[0..1];
-            let suit = &card[1..2];
+            let rank = &card.as_str()[0..1];
+            let suit = &card.as_str()[1..2];
             all_matching.insert(format!("{}{}", rank, suit));
+        } else if ranks.contains(&card.as_str()) {
+            // Это только ранг
+            for suit in &suits {
+                all_matching.insert(format!("{}{}", card.as_str(), suit));
+            }
         }
     }
 
