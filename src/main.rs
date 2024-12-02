@@ -16,14 +16,14 @@ fn main() {
     for _ in 0..r {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
-        removed_cards.push(input_line.trim_matches('\n').into());
+        removed_cards.push(input_line.trim_matches('\n').to_string());
     }
 
     let mut sought_cards = Vec::new();
     for _ in 0..s {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
-        sought_cards.push(input_line.trim_matches('\n').into());
+        sought_cards.push(input_line.trim_matches('\n').to_string());
     }
 
     // Создаем карты в виде множества, чтобы избежать дублирования
@@ -42,7 +42,7 @@ fn main() {
 
     // Удаляем удаленные карты
     for removed in &removed_cards {
-        if suits.contains(removed) {
+        if suits.contains(&removed.as_str()) {
             // Это масть
             let suit = removed;
             for rank in &ranks {
@@ -53,11 +53,18 @@ fn main() {
             let rank = &removed[0..1];
             let suit = &removed[1..2];
             all_possible.remove(&format!("{}{}", rank, suit));
-        } else if ranks.contains(removed) {
+        } else if ranks.contains(&removed.as_str()) {
             // Это только ранг
             let rank = removed;
             for suit in &suits {
                 all_possible.remove(&format!("{}{}", rank, suit));
+            }
+        } else if removed == "8" {
+            // Это '8'
+            for rank in &ranks {
+                for suit in &suits {
+                    all_possible.remove(&format!("{}{}", rank, suit));
+                }
             }
         }
     }
@@ -66,7 +73,7 @@ fn main() {
     let mut all_matching: HashSet<String> = HashSet::new();
 
     for card in &sought_cards {
-        if suits.contains(card) {
+        if suits.contains(&card.as_str()) {
             // Это масть
             let suit = card;
             for rank in &ranks {
@@ -77,19 +84,6 @@ fn main() {
             let rank = &card[0..1];
             let suit = &card[1..2];
             all_matching.insert(format!("{}{}", rank, suit));
-        } else if ranks.contains(card) {
-            // Это только ранг
-            let rank = card;
-            for suit in &suits {
-                all_matching.insert(format!("{}{}", rank, suit));
-            }
-        } else if false {
-            // Это '8'
-            for rank in &ranks {
-                for suit in &suits {
-                    all_matching.insert(format!("{}{}", rank, suit));
-                }
-            }
         }
     }
 
