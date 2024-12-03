@@ -19,10 +19,11 @@ fn main() {
     // Создаём множество для оставшихся карт
     let mut remaining_cards = HashSet::new();
 
-    // Заполняем колоду всеми возможными картами
+    // Определяем ранги и масти
     let ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
     let suits = ['C', 'D', 'H', 'S'];
 
+    // Заполняем колоду всеми возможными картами
     for &rank in &ranks {
         for &suit in &suits {
             remaining_cards.insert(format!("{}{}", rank, suit));
@@ -35,82 +36,65 @@ fn main() {
         io::stdin().read_line(&mut input_line).unwrap();
         let removed = input_line.trim().to_string();
 
-        // Обрабатываем удалённые карты
-        process_card_description(&removed, &mut remaining_cards);
+        if removed.len() == 1 { // Один ранг
+            let rank = removed.chars().next().unwrap();
+            for &suit in &suits {
+                remaining_cards.remove(&format!("{}{}", rank, suit));
+            }
+        } else if removed.len() == 2 { // Один ранг и одна масть
+            remaining_cards.remove(&removed);
+        } else { // Много рангов и мастей
+            let ranks_set: HashSet<_> = removed.chars().filter(|c| ranks.contains(c)).collect();
+            let suits_set: HashSet<_> = removed.chars().filter(|c| suits.contains(c)).collect();
+
+            for rank in ranks_set {
+                for &suit in &suits_set {
+                    remaining_cards.remove(&format!("{}{}", rank, suit));
+                }
+            }
+        }
     }
 
-    // Подсчитываем искомые карты
-    let mut sought_count = 0;
+    // Подсчитываем уникальные искомые карты
+    let mut sought_cards = HashSet::new();
 
     for _ in 0..s {
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let sought = input_line.trim().to_string();
 
-        // Обрабатываем искомые карты
-        sought_count += count_matching_cards(&sought, &remaining_cards);
+        if sought.len() == 1 { // Один ранг
+            let rank = sought.chars().next().unwrap();
+            for &suit in &suits {
+                sought_cards.insert(format!("{}{}", rank, suit));
+            }
+        } else if sought.len() == 2 { // Один ранг и одна масть
+            sought_cards.insert(sought.clone());
+        } else { // Много рангов и мастей
+            let ranks_set: HashSet<_> = sought.chars().filter(|c| ranks.contains(c)).collect();
+            let suits_set: HashSet<_> = sought.chars().filter(|c| suits.contains(c)).collect();
+
+            for rank in ranks_set {
+                for &suit in &suits_set {
+                    sought_cards.insert(format!("{}{}", rank, suit));
+                }
+            }
+        }
+
+        // Удаляем карты, которые отсутствуют в оставшихся картах
+        sought_cards.retain(|card| remaining_cards.contains(card));
     }
 
     // Вычисляем вероятность
-    let remaining_count = remaining_cards.len() as f64;
-    let odds_percentage = if remaining_count > 0 {
-        (sought_count as f64 / remaining_count * 100.0).round() as i32
+    let remaining_count = remaining_cards.len(); // Количество оставшихся карт
+    let sought_count = sought_cards.len(); // Количество уникальных искомых карт
+
+    let odds_percentage = if remaining_count > 0 { // Использование целых чисел
+        sought_count * 100 / remaining_count // Вероятность в процентах
     } else {
         0 // Если нет оставшихся карт, вероятность 0%
     };
 
     // Выводим результат
     println!("{}%", odds_percentage);
-}
-
-// Функция для обработки описания карт (удаление)
-fn process_card_description(description: &str, remaining_cards: &mut HashSet<String>) {
-    if description.len() == 1 { // Один ранг
-        let rank = description.chars().next().unwrap();
-        for suit in ['C', 'D', 'H', 'S'] {
-            remaining_cards.remove(&format!("{}{}", rank, suit));
-        }
-    } else if description.len() == 2 { // Один ранг и одна масть
-        remaining_cards.remove(description);
-    } else { // Много рангов и мастей
-        let ranks: HashSet<_> = description.chars().filter(|c| c.is_digit(10) || "TJQKA".contains(*c)).collect();
-        let suits: HashSet<_> = description.chars().filter(|c| "CDHS".contains(*c)).collect();
-
-        for rank in ranks {
-            for suit in suits.iter() {
-                remaining_cards.remove(&format!("{}{}", rank, suit));
-            }
-        }
-    }
-}
-
-// Функция для подсчёта подходящих карт по описанию
-fn count_matching_cards(description: &str, remaining_cards: &HashSet<String>) -> usize {
-    let mut count = 0;
-
-    if description.len() == 1 { // Один ранг
-        let rank = description.chars().next().unwrap();
-        for suit in ['C', 'D', 'H', 'S'] {
-            if remaining_cards.contains(&format!("{}{}", rank, suit)) {
-                count += 1;
-            }
-        }
-    } else if description.len() == 2 { // Один ранг и одна масть
-        if remaining_cards.contains(description) {
-            count += 1;
-        }
-    } else { // Много рангов и мастей
-        let ranks: HashSet<_> = description.chars().filter(|c| c.is_digit(10) || "TJQKA".contains(*c)).collect();
-        let suits: HashSet<_> = description.chars().filter(|c| "CDHS".contains(*c)).collect();
-
-        for rank in ranks {
-            for suit in suits.iter() {
-                if remaining_cards.contains(&format!("{}{}", rank, suit)) {
-                    count += 1;
-                }
-            }
-        }
-    }
-
-    count
 }
