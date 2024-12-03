@@ -41,8 +41,6 @@ fn main() {
             for &suit in &suits {
                 remaining_cards.remove(&format!("{}{}", rank, suit));
             }
-        } else if removed.len() == 2 { // Один ранг и одна масть
-            remaining_cards.remove(&removed);
         } else { // Много рангов и мастей
             let ranks_set: HashSet<_> = removed.chars().filter(|c| ranks.contains(c)).collect();
             let suits_set: HashSet<_> = removed.chars().filter(|c| suits.contains(c)).collect();
@@ -68,8 +66,6 @@ fn main() {
             for &suit in &suits {
                 sought_cards.insert(format!("{}{}", rank, suit));
             }
-        } else if sought.len() == 2 { // Один ранг и одна масть
-            sought_cards.insert(sought.clone());
         } else { // Много рангов и мастей
             let ranks_set: HashSet<_> = sought.chars().filter(|c| ranks.contains(c)).collect();
             let suits_set: HashSet<_> = sought.chars().filter(|c| suits.contains(c)).collect();
